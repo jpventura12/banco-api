@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+TestResults/
+logs/
+data/*.db
+data/*.db-*
+*.db-journal
+
+# Docs de estudio/defensa (no van al repo)
+GUIA-APB.md
+DEFENSA.md
+refactor_plan.md

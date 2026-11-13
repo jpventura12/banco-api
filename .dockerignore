@@ -1,0 +1,23 @@
+# Solo entra al contexto lo necesario para compilar y ejecutar la API.
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+**/logs/
+**/TestResults/
+data/
+tests/
+postman/
+docs/
+.git/
+.gitignore
+.gitattributes
+.dockerignore
+Dockerfile
+*.md
+database/schema.sql
+database/masterSQL.sqlserver.sql
+tools/

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Casos de uso, DTOs y contratos. Solo depende del dominio.
+    Capa Application: los servicios (ClientesService, CuentasService), los DTOs que devuelve la API
+    y las interfaces (Abstractions) de lo que necesita del exterior: repositorios, BCRA, CorrelationId.
+    No conoce SQLite, HTTP ni Polly: esas interfaces las implementa Infrastructure (inversión de dependencias).
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Banco.Domain\Banco.Domain.csproj" />
+  </ItemGroup>
+</Project>

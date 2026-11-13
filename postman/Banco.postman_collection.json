@@ -1,0 +1,463 @@
+{
+  "info": {
+    "name": "Banco API - Prueba técnica",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Clientes, cuentas y movimientos (SQLite) + Central de Deudores del BCRA. Cambiar la variable baseUrl según dónde corra la API (local: http://localhost:5080, Docker: http://localhost:8080)."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5080"
+    },
+    {
+      "key": "cuitPersona",
+      "value": "20-12345678-6"
+    },
+    {
+      "key": "cuitEmpresa",
+      "value": "30546689979"
+    },
+    {
+      "key": "cuentaId",
+      "value": "1"
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Devuelve X-Correlation-ID', () => pm.expect(pm.response.headers.get('X-Correlation-ID')).to.be.a('string').and.not.empty);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Clientes",
+      "item": [
+        {
+          "name": "Listado de clientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Página con items y total', () => { pm.expect(b.items).to.be.an('array'); pm.expect(b.total).to.be.a('number'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listado - paginación inválida (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes?pageSize=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "pageSize",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));",
+                  "pm.test('ProblemDetails con el mismo correlationId que el header', () => pm.expect(pm.response.json().correlationId).to.eql(pm.response.headers.get('X-Correlation-ID')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente por CUIT - persona (BCRA sin registros)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/{{cuitPersona}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "{{cuitPersona}}"
+              ]
+            },
+            "description": "CUIT sintético: el BCRA responde 404, que la API muestra como estado SinRegistros."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Incluye cuentas', () => pm.expect(b.cuentas).to.be.an('array').that.is.not.empty);",
+                  "pm.test('Incluye situación BCRA', () => pm.expect(['Ok','SinRegistros','NoDisponible']).to.include(b.situacionBcra.estado));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente por CUIT - empresa (BCRA con deudas; ejecutar 2 veces para ver la cache)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/{{cuitEmpresa}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "{{cuitEmpresa}}"
+              ]
+            },
+            "description": "La primera vez fuente = bcra; la segunda (dentro de CacheOptions:BcraExpirationSeconds) fuente = cache, sin llamar al BCRA (ver log 'Cache HIT')."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json().situacionBcra;",
+                  "console.log('BCRA estado:', s.estado, '| fuente:', s.fuente, '| desactualizado:', s.desactualizado);",
+                  "pm.test('Fuente informada', () => { if (s.estado !== 'NoDisponible') pm.expect(['bcra','cache','cache-vencido']).to.include(s.fuente); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente por CUIT - formato inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "123"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente por CUIT - dígito verificador inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/30500010913",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "30500010913"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente por CUIT - no es cliente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/23401112227",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "23401112227"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cuentas",
+      "item": [
+        {
+          "name": "Cuenta con movimientos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cuentas/{{cuentaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cuentas",
+                "{{cuentaId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Saldo = suma de movimientos', () => { const s = b.movimientos.reduce((a, m) => a + m.importe, 0); pm.expect(Math.round(s * 100) / 100).to.eql(b.saldo); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cuenta - movimientos entre fechas (hasta inclusivo)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cuentas/{{cuentaId}}?desde=2026-10-01&hasta=2026-10-02",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cuentas",
+                "{{cuentaId}}"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-10-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-10-02"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('Solo movimientos del rango', () => pm.response.json().movimientos.forEach(m => pm.expect(m.fecha.substring(0, 10) >= '2026-10-01' && m.fecha.substring(0, 10) <= '2026-10-02').to.be.true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cuenta inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cuentas/999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cuentas",
+                "999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Observabilidad",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 (Healthy o Degraded)', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Informa sqlite, circuito BCRA y cache', () => pm.expect(b.checks.map(c => c.name)).to.include.members(['sqlite','bcra-circuit','memory-cache']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CorrelationId propio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "postman-{{$timestamp}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes?page=1&pageSize=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Buscar este valor en logs/banco-*.log: aparece en cada línea del request, incluida la llamada al BCRA."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Devuelve el mismo X-Correlation-ID enviado', () => pm.expect(pm.response.headers.get('X-Correlation-ID')).to.eql(pm.request.headers.get('X-Correlation-ID')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

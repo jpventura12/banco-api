@@ -1,0 +1,4 @@
+* text=auto
+# El entrypoint corre en Linux: con CRLF (checkout en Windows) falla con "not found".
+*.sh text eol=lf
+*.sql text eol=lf

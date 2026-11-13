@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Tests de integración: levantan la API completa en memoria (WebApplicationFactory) y la prueban
+    por HTTP, de punta a punta, contra una base SQLite temporal y con el BCRA simulado.
+  -->
+  <PropertyGroup>
+    <!-- No se publica como paquete NuGet. -->
+    <IsPackable>false</IsPackable>
+    <!-- Marca el proyecto como de tests: dotnet test y Visual Studio lo reconocen. -->
+    <IsTestProject>true</IsTestProject>
+    <!-- En tests los avisos de analizadores (xUnit, etc.) se muestran pero no rompen el build. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Sin Version: las versiones están en Directory.Packages.props. -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Referencia a la Api: WebApplicationFactory necesita su Program para levantarla. -->
+    <ProjectReference Include="..\..\src\Banco.Api\Banco.Api.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Los tests crean la base con los mismos scripts que se entregan a los DBAs. -->
+    <!-- Link: el archivo NO se copia en el repo, se referencia el original de database/ y se copia a la carpeta bin. -->
+    <None Include="..\..\database\masterSQL.sql" Link="database\masterSQL.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\database\seed.sql" Link="database\seed.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- "using Xunit;" global: [Fact], [Theory] y Assert se usan en todos los archivos sin escribir el using. -->
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

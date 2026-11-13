@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Tests unitarios: prueban cada pieza aislada (dominio, servicios, mapper del BCRA, cache y
+    resiliencia), con mocks en lugar de la base y del BCRA reales.
+  -->
+  <PropertyGroup>
+    <!-- No se publica como paquete NuGet. -->
+    <IsPackable>false</IsPackable>
+    <!-- Marca el proyecto como de tests: dotnet test y Visual Studio lo reconocen. -->
+    <IsTestProject>true</IsTestProject>
+    <!-- En tests los avisos de analizadores (xUnit, etc.) se muestran pero no rompen el build. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Los tests usan tipos del framework de ASP.NET Core (MemoryCache, health checks, HttpClientFactory), igual que Infrastructure. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Sin Version: las versiones están en Directory.Packages.props. -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Banco.Domain\Banco.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Banco.Application\Banco.Application.csproj" />
+    <ProjectReference Include="..\..\src\Banco.Infrastructure\Banco.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Respuesta real de la API del BCRA (CUIT 30500010912, consultada el 11/11/2026). -->
+    <!-- Se copia junto a los tests (carpeta bin) para que BcraMapperTests la pueda leer. -->
+    <None Include="Fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- "using Xunit;" global: [Fact], [Theory] y Assert se usan en todos los archivos sin escribir el using. -->
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

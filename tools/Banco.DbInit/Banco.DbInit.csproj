@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Aplica database/masterSQL.sql y database/seed.sql sin necesitar el sqlite3 de línea de comandos. -->
+  <!-- Es una herramienta de apoyo, no forma parte de la API: se ejecuta a mano con dotnet run (ver README y Program.cs). -->
+  <PropertyGroup>
+    <!-- Exe: programa de consola. -->
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- El mismo driver de SQLite que usa la API. Sin Version: está en Directory.Packages.props. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+</Project>

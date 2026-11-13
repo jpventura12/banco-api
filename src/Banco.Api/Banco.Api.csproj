@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!--
+    Capa Api: el proyecto que se ejecuta (Program.cs). Sdk.Web trae ASP.NET Core completo:
+    servidor web (Kestrel), Minimal APIs, middlewares, health checks, etc.
+    Depende de Application (los servicios que llaman los endpoints) y de Infrastructure
+    (Program.cs registra sus implementaciones con AddInfrastructure).
+    El TargetFramework y el resto de lo común viene de Directory.Build.props.
+  -->
+  <PropertyGroup>
+    <!--
+      Comentarios XML para Swagger, sin exigirlos en todo el código.
+      GenerateDocumentationFile genera Banco.Api.xml con los comentarios ///, y Program.cs se lo pasa a Swagger.
+      1591 = "falta el comentario XML" y 1573 = "un parámetro no tiene su param": no se exigen.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Sin Version: las versiones están en Directory.Packages.props. -->
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Banco.Application\Banco.Application.csproj" />
+    <ProjectReference Include="..\Banco.Infrastructure\Banco.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,33 @@
+<Project>
+  <!--
+    Directory.Build.props: MSBuild lo importa AUTOMÁTICAMENTE en todos los proyectos que están en
+    esta carpeta o debajo (src, tests y tools). La configuración común se escribe una sola vez acá
+    y no se repite en cada .csproj. Un proyecto puede pisar un valor en su propio .csproj
+    (ej. los proyectos de tests ponen TreatWarningsAsErrors en false).
+  -->
+  <PropertyGroup>
+    <!-- .NET 8 (versión LTS) para todos los proyectos. -->
+    <TargetFramework>net8.0</TargetFramework>
+
+    <!-- Tipos que aceptan null marcados con "?": el compilador avisa cuando algo puede ser null y no se controla. -->
+    <Nullable>enable</Nullable>
+
+    <!-- Usings implícitos: System, System.IO, System.Linq, System.Threading.Tasks, etc. sin escribirlos en cada archivo. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- La versión más nueva de C# que soporte el SDK instalado (el código usa C# 12: constructores primarios, colecciones [...]). -->
+    <LangVersion>latest</LangVersion>
+
+    <!-- Los avisos del compilador se tratan como errores: el código no compila con advertencias pendientes. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Avisos de NuGet (vulnerabilidades/resolución de versiones) no rompen el build: se revisan aparte. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1603;NU1608;NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+
+    <!--
+      false es el valor normal: .NET usa los datos de cultura del sistema operativo (ICU), por ejemplo
+      para comparar y ordenar textos con acentos. En true trabajaría solo con la cultura invariante.
+    -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

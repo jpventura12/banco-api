@@ -1,0 +1,39 @@
+<Project>
+  <!--
+    Versiones centralizadas (Central Package Management).
+    Las VERSIONES de los paquetes NuGet se definen solo acá. Los .csproj dicen QUÉ paquete usan
+    (PackageReference sin Version): así todos los proyectos usan la misma versión de cada paquete,
+    y actualizar uno es cambiar una sola línea de este archivo.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Infrastructure -->
+    <!-- Dapper: micro-ORM. Ejecuta el SQL escrito a mano y convierte cada fila en un objeto. -->
+    <PackageVersion Include="Dapper" Version="2.1.35" />
+    <!-- Driver de SQLite de Microsoft (ADO.NET): la conexión sobre la que trabaja Dapper. -->
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.11" />
+    <!-- Resiliencia para HttpClient (Polly v8 adentro): timeouts, reintentos y circuit breaker del cliente del BCRA. -->
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.10.0" />
+
+    <!-- Api -->
+    <!-- Serilog integrado a ASP.NET Core: logs estructurados a consola y archivo, configurados desde appsettings.json. -->
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
+    <!-- Swagger: genera la documentación OpenAPI y la página /swagger para probar los endpoints. -->
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+
+    <!-- Tests -->
+    <!-- Lo necesario para ejecutar tests con dotnet test o desde el Explorador de pruebas de Visual Studio. -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <!-- xUnit: el framework de tests ([Fact], [Theory], Assert) y su adaptador para Visual Studio / dotnet test. -->
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Moq: objetos falsos (mocks) del BCRA, de los repositorios y del HttpMessageHandler. -->
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <!-- FakeTimeProvider: un reloj falso para probar los vencimientos de la cache sin esperar. -->
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.10.0" />
+    <!-- WebApplicationFactory: levanta la API completa en memoria para los tests de integración. -->
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
+  </ItemGroup>
+</Project>

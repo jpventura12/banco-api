@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Dominio: sin dependencias externas.
+    Capa Domain: las entidades (Cliente, Cuenta, Movimiento), el value object Cuit y el modelo de la
+    situación crediticia del BCRA. No referencia ningún otro proyecto ni paquete NuGet: es el centro
+    de la arquitectura, y sus reglas se pueden testear sin base de datos ni red.
+  -->
+</Project>

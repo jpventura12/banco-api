@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Capa Infrastructure: implementa las interfaces de Application con tecnología concreta:
+    repositorios (Dapper + SQLite), cliente HTTP del BCRA (con resiliencia), cache, opciones
+    y health checks. DependencyInjection.cs registra todo con un solo AddInfrastructure.
+  -->
+  <ItemGroup>
+    <!-- Options, Logging, MemoryCache, HttpClientFactory y HealthChecks vienen del framework compartido de ASP.NET Core. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Sin Version: las versiones están en Directory.Packages.props. -->
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Banco.Application\Banco.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Las clases internal (BcraMapper, los DTOs del BCRA, etc.) no se ven desde otros proyectos,
+      salvo desde los tests unitarios: así se prueban sin tener que hacerlas públicas.
+    -->
+    <InternalsVisibleTo Include="Banco.UnitTests" />
+  </ItemGroup>
+</Project>
